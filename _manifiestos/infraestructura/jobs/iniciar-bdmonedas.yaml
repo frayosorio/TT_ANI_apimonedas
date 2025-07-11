@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: iniciar-bdmonedas
+spec:
+  restartPolicy: Never
+  containers:
+  - name: iniciar-bdmonedas
+    image: postgres:16
+    command: ["/bin/bash", "-c"]
+    args:
+    - |
+      

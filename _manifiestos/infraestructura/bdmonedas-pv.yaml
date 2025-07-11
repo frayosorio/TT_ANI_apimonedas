@@ -9,4 +9,4 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: "/data/postgres"
-  PersistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Delete
