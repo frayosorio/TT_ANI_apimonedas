@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bdmonedas-cm-iniciar
+  name: bdmonedas-cm-iniciar-tt
 data:
   DDL_monedas.sql: |
     /* Crear tabla MONEDA */

@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: iniciar-bdmonedas
+  name: iniciar-bdmonedas-tt
 spec:
   restartPolicy: Never
   containers:

@@ -3,15 +3,15 @@ kind: StatefulSet
 metadata:
   name: bdmonedas-sfs-tt
 spec:
-  serviceName: "bdmonedas-servicio"
+  serviceName: "bdmonedas-servicio-tt"
   replicas: 1
   selector:
     matchLabels:
-      app: bdmonedas 
+      app: bdmonedas-tt 
   template:
     metadata:
       labels:
-        app: bdmonedas
+        app: bdmonedas-tt
     spec:
       containers:
         - name: bdmonedas

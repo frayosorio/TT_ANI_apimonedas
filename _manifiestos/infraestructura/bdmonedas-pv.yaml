@@ -8,5 +8,5 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/data/postgres"
+    path: "/data/postgres-tt"
   persistentVolumeReclaimPolicy: Delete

@@ -4,7 +4,7 @@ metadata:
   name: bdmonedas-servicio-tt
 spec:
   selector: 
-    app: bdmonedas
+    app: bdmonedas-tt
   ports:
     - port: 5432
       targetPort: 5432
