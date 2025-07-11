@@ -17,8 +17,10 @@ spec:
         - name: bdmonedas
           image: postgres:16
           ports:
-          - containerPort: 5432
+          - containerPort: 5433
         - env:
+          - name: PGPORT
+            value: "5433"
           - name: POSTGRES_DB
             value: monedas
           - name: POSTGRES_USER
