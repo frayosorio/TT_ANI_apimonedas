@@ -7,30 +7,30 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: bdmonedas-tt 
+      app: bdmonedas-tt
   template:
     metadata:
       labels:
         app: bdmonedas-tt
     spec:
       containers:
-        - name: bdmonedas
+        - name: bdmonedas # <-- Aquí empieza la definición del único contenedor
           image: postgres:16
           ports:
-          - containerPort: 5433
-        - env:
-          - name: PGPORT
-            value: "5433"
-          - name: POSTGRES_DB
-            value: monedas
-          - name: POSTGRES_USER
-            value: postgres
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: bdmonedas-secretos-tt
-                key: BDMONEDAS_PASSWORD
-          volumeMounts:
+            - containerPort: 5433
+          env: # <-- Esta sección debe estar indentada al mismo nivel que 'ports', 'image', 'name'
+            - name: PGPORT
+              value: "5433"
+            - name: POSTGRES_DB
+              value: monedas
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bdmonedas-secretos-tt
+                  key: BDMONEDAS_PASSWORD
+          volumeMounts: # <-- Esta sección también debe estar indentada al mismo nivel
             - name: storage-bdmonedas
               mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:
@@ -41,5 +41,3 @@ spec:
         resources:
           requests:
             storage: 1Gi
-
-            
