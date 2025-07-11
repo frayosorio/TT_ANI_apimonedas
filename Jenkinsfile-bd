@@ -10,7 +10,8 @@ pipeline {
             steps {
                 script {
                     bat """
-                    kubectl delete statefulset bdmonedas-sfs --ignore-not-found
+                    kubectl delete statefulset bdmonedas-sfs-tt --ignore-not-found
+                    kubectl delete pvc storage-bdmonedas-bdmonedas-sfs-tt-0 --ignore-not-found
                     """
                 }
             }
