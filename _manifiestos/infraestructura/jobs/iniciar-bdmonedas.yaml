@@ -77,4 +77,4 @@ spec:
       volumes: # <--- ESTO ESTÁ AL MISMO NIVEL QUE 'containers' (dentro de spec.template.spec)
         - name: scripts
           configMap:
-            name: bdmonedas-cm-iniciar
+            name: bdmonedas-cm-iniciar-tt
