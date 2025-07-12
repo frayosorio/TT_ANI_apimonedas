@@ -37,6 +37,20 @@ pipeline {
                 }
             }
 
+        stage('Ejecutar scripts iniciales') {
+                steps {
+                    script {
+                        bat """
+                        kubectl delete job iniciar-bdmonedas-tt --ignore-not-found
+                        kubectl apply -f _manifiestos\\infraestructura\\jobs\\iniciar-bdmonedas.yaml
+                        kubectl wait --for=condition=complete job/iniciar-bdmonedas-tt --timeout=600s
+
+                        kubectl logs job/iniciar-bdmonedas-tt
+                        """
+                    }
+                }
+            }
+
     }
 
     post {
