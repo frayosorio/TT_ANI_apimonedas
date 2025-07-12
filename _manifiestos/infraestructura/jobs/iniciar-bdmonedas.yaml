@@ -3,68 +3,72 @@ kind: Job
 metadata:
   name: iniciar-bdmonedas-tt
 spec:
-  restartPolicy: Never
-  containers:
-  - name: iniciar-bdmonedas
-    image: postgres:16
-    command: ["/bin/bash", "-c"]
-    args:
-    - |
-      apt-get update && apt-get install -y postgresql-client psmisc && rm -rf /var/lib/apt/lists/*
-      sleep 5
+  ttlSecondsAfterFinished: null 
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: iniciar-bdmonedas
+        image: postgres:16
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          apt-get update && apt-get install -y postgresql-client psmisc && rm -rf /var/lib/apt/lists/*
+          sleep 5
 
-      DB_HOST="servicio-bdmonedas-tt"
-      DB_USER="postgres"
-      DB_NAME_POSTGRES="postgres"
-      DB_NAME_MONEDAS="monedas"
-      MAX_RETRIES=90 # Aumentado el número de reintentos para dar más tiempo a la DB
-      RETRY_INTERVAL=2 # Intervalo de espera en segundos
+          DB_HOST="servicio-bdmonedas-tt"
+          DB_USER="postgres"
+          DB_NAME_POSTGRES="postgres"
+          DB_NAME_MONEDAS="monedas"
+          MAX_RETRIES=90 # Aumentado el número de reintentos para dar más tiempo a la DB
+          RETRY_INTERVAL=2 # Intervalo de espera en segundos
 
-      for i in $(seq 1 $MAX_RETRIES); do
-        PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_POSTGRES" -c '\q' &>/dev/null
-        if [ $? -eq 0 ]; then
-          break
-        fi
+          for i in $(seq 1 $MAX_RETRIES); do
+            PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_POSTGRES" -c '\q' &>/dev/null
+            if [ $? -eq 0 ]; then
+              break
+            fi
 
-        sleep $RETRY_INTERVAL
+            sleep $RETRY_INTERVAL
 
-        if [ $i -eq  $MAX_RETRIES ]; then
-          exit 1
-        fi
-      done
+            if [ $i -eq  $MAX_RETRIES ]; then
+              exit 1
+            fi
+          done
 
-      PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_POSTGRES" -c "CREATE DATABASE ${DB_NAME_MONEDAS};" &>/dev/null || true
+          PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_POSTGRES" -c "CREATE DATABASE ${DB_NAME_MONEDAS};" &>/dev/null || true
 
-      for i in $(seq 1 $MAX_RETRIES); do
-        PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_MONEDAS" -c '\q' &>/dev/null
-        if [ $? -eq 0 ]; then
-          break
-        fi
+          for i in $(seq 1 $MAX_RETRIES); do
+            PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_MONEDAS" -c '\q' &>/dev/null
+            if [ $? -eq 0 ]; then
+              break
+            fi
 
-        sleep $RETRY_INTERVAL
+            sleep $RETRY_INTERVAL
 
-        if [ $i -eq  $MAX_RETRIES ]; then
-          exit 1
-        fi
-      done
+            if [ $i -eq  $MAX_RETRIES ]; then
+              exit 1
+            fi
+          done
 
-      PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_MONEDAS" -f /scripts/DDL_monedas.sql &>/dev/null
-      PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_MONEDAS" -f /scripts/DML_monedas.sql &>/dev/null
-    env:
-    - name: PGPASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: bdmonedas-secretos-tt
-          key: BDMONEDAS_PASSWORD
-    volumeMounts:
-    - name: scripts
-      mountPath: /scripts
-  volumes:
-    - name: scripts
-      configMap:
-        name: bdmonedas-cm-iniciar
-
-
+          PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_MONEDAS" -f /scripts/DDL_monedas.sql &>/dev/null
+          PGPASSWORD="${PGPASSWORD}" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME_MONEDAS" -f /scripts/DML_monedas.sql &>/dev/null
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: bdmonedas-secretos-tt
+              key: BDMONEDAS_PASSWORD
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: bdmonedas-cm-iniciar
 
 
-      
+
+
+        
