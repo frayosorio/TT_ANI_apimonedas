@@ -2,46 +2,54 @@ pipeline{
     agent any
 
     environment{
-        DOCKER_IMAGE = 'apimonedastt'
-        CONTAINER_NAME = 'dockerapimonedastt'
-        DOCKER_NETWORK = 'dockermonedas_red'
-        //DOCKER_BUILD_DIR = 'presentacion'
-        HOST_PORT = '9080'
-        CONTAINER_PORT = '8080'
+        DOCKER_IMAGE = 'frayosorio/apimonedas-tt'
+        KUBECONFIG = credentials('300')
     }
 
     stages{
-        /*
-        stage('Compilación Maven'){
-            steps{
-                bat 'mvn clean package -Dskiptests'
-            }
-        }
-        */
         stage('Construir imagen'){
             steps{
-                //dir("${DOCKER_BUILD_DIR}"){
-                    bat "docker build . -t ${DOCKER_IMAGE}"
-                //}
+                bat "docker build . -t ${DOCKER_IMAGE}"
             }
         }
-        stage('Limpiar contenedor existente') {
+        stage('Limpiar datos previos') {
             steps {
                 script {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        bat """
-                        docker container inspect ${CONTAINER_NAME} >nul 2>&1 && (
-                            docker container stop ${CONTAINER_NAME}
-                            docker container rm ${CONTAINER_NAME}
-                        ) || echo "No existe el contenedor '${CONTAINER_NAME}'."
-                        """
-                    }
+                    bat """
+                    kubectl delete hpa apimonedas-hpa-tt --ignore-not-found
+                    kubectl delete deployment apimonedas-deployment-tt --ignore-not-found
+                    kubectl delete service apimonedas-servicio-tt --ignore-not-found
+                    kubectl delete configmap apimonedas-cm-tt --ignore-not-found
+                    """
                 }
             }
         }
-        stage('Ejecutar contenedor'){
+        stage('Registrar imagen'){
             steps{
-                bat "docker run --network ${DOCKER_NETWORK} --name ${CONTAINER_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} -d ${DOCKER_IMAGE}"
+                withCredentials([usernamePassword(credentialsId: '200', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat """
+                        docker push ${DOCKER_IMAGE}
+                        docker logout
+                    """
+            }
+        }
+        stage('Aplicar Manifiestos API') {
+            steps {
+                script {
+                    bat """
+                    kubectl apply -f _manifiestos\\api\\
+                    """
+                }
+            }
+        }
+        stage('Despliegue'){
+            steps{
+                script {
+                    bat """
+                        kubectl set image deployment/apimonedas-deployment-tt ${DOCKER_IMAGE} --record
+                        kubectl rollout status deployment/apimonedas-deployment-tt
+                    """
+                }
             }
         }
     }
