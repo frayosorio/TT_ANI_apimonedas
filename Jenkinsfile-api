@@ -31,6 +31,7 @@ pipeline{
                         docker push ${DOCKER_IMAGE}
                         docker logout
                     """
+                }
             }
         }
         stage('Aplicar Manifiestos API') {
